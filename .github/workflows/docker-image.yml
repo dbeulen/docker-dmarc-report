@@ -13,6 +13,9 @@ on:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    env:
+      # falls back to the GitHub owner where secrets are unavailable (e.g. PRs from forks)
+      DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME || github.repository_owner }}/dmarc-report
 
     steps:
       - uses: actions/checkout@v3
@@ -27,7 +30,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: gutmensch/dmarc-report
+          images: ${{ env.DOCKER_IMAGE }}
           flavor: latest=true
           tags: |
             type=ref,event=branch
@@ -50,5 +53,5 @@ jobs:
           push: ${{ github.ref_type == 'tag' }}
           tags: |
             ${{ steps.meta.outputs.tags }}
-            gutmensch/dmarc-report:latest
+            ${{ env.DOCKER_IMAGE }}:latest
           labels: ${{ steps.meta.outputs.labels }}
