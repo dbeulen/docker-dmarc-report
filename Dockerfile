@@ -1,4 +1,4 @@
-ARG UPSTREAM_IMAGE=trafex/php-nginx:2.6.0
+ARG UPSTREAM_IMAGE=trafex/php-nginx:3.12.0
 
 FROM $UPSTREAM_IMAGE
 
@@ -33,9 +33,10 @@ RUN set -e -x \
   openssl-dev \
   perl-dev \
   perl-utils \
-  php81-pdo \
-  php81-pdo_mysql \
-  php81-pdo_pgsql \
+  'php85>=8.5.12' \
+  php85-pdo \
+  php85-pdo_mysql \
+  php85-pdo_pgsql \
   tzdata \
   wget \
   && wget -4 -q --no-check-certificate -O parser.zip $REPORT_PARSER_SOURCE \
@@ -43,10 +44,10 @@ RUN set -e -x \
   && unzip parser.zip && cp -av dmarcts-report-parser-master/* /usr/bin/ && rm -vf parser.zip && rm -rvf dmarcts-report-parser-master \
   && unzip viewer.zip && cp -av dmarcts-report-viewer-master/* /var/www/viewer/ && rm -vf viewer.zip && rm -rvf dmarcts-report-viewer-master \
   && sed -i "1s/^/body { font-family: Sans-Serif; }\n/" /var/www/viewer/default.css \
-  && sed -i 's%.*listen [::]:8080 default_server;%        listen [::]:80 default_server;%g' /etc/nginx/nginx.conf \
-  && sed -i 's%.*listen 8080 default_server;%        listen 80 default_server;%g' /etc/nginx/nginx.conf \
-  && sed -i 's%.*root /var/www/html;%        root /var/www/viewer;%g' /etc/nginx/nginx.conf \
-  && sed -i 's/.*index index.php index.html;/        index dmarcts-report-viewer.php;/g' /etc/nginx/nginx.conf \
+  && sed -i 's%.*listen \[::\]:8080 default_server;%    listen [::]:80 default_server;%g' /etc/nginx/conf.d/default.conf \
+  && sed -i 's%.*listen 8080 default_server;%    listen 80 default_server;%g' /etc/nginx/conf.d/default.conf \
+  && sed -i 's%.*root /var/www/html;%    root /var/www/viewer;%g' /etc/nginx/conf.d/default.conf \
+  && sed -i 's/.*index index.php index.html;/    index dmarcts-report-viewer.php;/g' /etc/nginx/conf.d/default.conf \
   && sed -i 's%files = /etc/supervisor.d/\*.ini%files = /etc/supervisor/conf.d/*.conf%g' /etc/supervisord.conf \
   && (echo y;echo o conf allow_installing_outdated_dists yes;echo o conf prerequisites_policy follow;echo o conf commit)|cpan \
   && for i in \
